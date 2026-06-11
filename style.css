@@ -214,6 +214,41 @@ button.status-pg { border: none; cursor: pointer; }
 .rodape-link a { color: var(--azul); text-decoration: none; font-weight: 600; }
 
 @media (max-width: 560px) {
+  body { padding: 16px 12px 50px; }
+
+  header { padding: 22px 18px; }
+  header h1 { font-size: 26px; }
+  header .info { font-size: 13px; }
+
+  .card { padding: 16px; }
+
   .resumo { grid-template-columns: repeat(2, 1fr); }
+  .resumo .box .num { font-size: 20px; }
+
+  /* Formulário de novo palpite: nome em cima, placar lado a lado, botão full */
+  form.novo { gap: 12px; }
+  form.novo .campo { flex: 1; }
+  form.novo .campo:first-child { flex-basis: 100%; }
   form.novo input.nome { width: 100%; }
+  form.novo input.gols { width: 100%; }
+  form.novo .x { align-self: flex-end; padding: 0 0 14px; }
+  form.novo button.principal { flex-basis: 100%; width: 100%; }
+
+  /* Apuração: mesmo padrão */
+  .apuracao { gap: 12px; }
+  .apuracao .campo { flex: 1; }
+  .apuracao input { width: 100%; }
+  .apuracao .x { padding-bottom: 14px; }
+  .apuracao button { flex-basis: 100%; width: 100%; }
+
+  /* Tabela mais compacta para caber em telas estreitas */
+  th, td { padding: 10px 6px; }
+  th { font-size: 10px; letter-spacing: 0.4px; }
+  td { font-size: 14px; }
+  .palpite-p { font-size: 15px; letter-spacing: 0; }
+  .status-pg { white-space: nowrap; padding: 6px 10px; font-size: 11px; }
+  button.perigo { padding: 6px 2px; font-size: 12px; }
+
+  .acoes { flex-direction: column; }
+  .acoes button { width: 100%; }
 }
