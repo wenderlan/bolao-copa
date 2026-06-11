@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Bolão Brasil x Marrocos · Edição</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">Modo edição</div>
+    <h1>Brasil <span>x</span> Marrocos</h1>
+    <div class="info">Sábado, 13 de junho de 2026, 19h (Brasília) · MetLife Stadium, Nova Jersey</div>
+    <div class="barra-status">
+      <span class="dot" id="dot"></span>
+      <span id="status-texto">Carregando...</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <h2>Resumo</h2>
+    <div class="resumo">
+      <div class="box"><div class="num" id="r-participantes">0</div><div class="lbl">Palpites</div></div>
+      <div class="box"><div class="num" id="r-arrecadado">R$ 0</div><div class="lbl">Arrecadado</div></div>
+      <div class="box pendente"><div class="num" id="r-pendente">R$ 0</div><div class="lbl">Pendente</div></div>
+      <div class="box premio"><div class="num" id="r-premio">R$ 0</div><div class="lbl">Prêmio</div></div>
+    </div>
+    <div class="valor-aposta">
+      Valor por palpite: R$
+      <input type="number" id="valor-aposta" min="1" step="1">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Novo palpite</h2>
+    <form class="novo" id="form-palpite">
+      <div class="campo">
+        <label>Nome</label>
+        <input class="nome" id="in-nome" type="text" placeholder="Nome da pessoa" required>
+      </div>
+      <div class="campo">
+        <label>Brasil</label>
+        <input class="gols" id="in-gols-br" type="number" min="0" max="20" required>
+      </div>
+      <div class="x">x</div>
+      <div class="campo">
+        <label>Marrocos</label>
+        <input class="gols" id="in-gols-adv" type="number" min="0" max="20" required>
+      </div>
+      <button type="submit" class="principal">Adicionar</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Participantes</h2>
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Palpite</th>
+          <th>Pagamento</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="vazio-msg" id="msg-vazio">Nenhum palpite cadastrado ainda.</div>
+  </div>
+
+  <div class="card">
+    <h2>Apuração (depois do jogo)</h2>
+    <div class="apuracao">
+      <div class="campo">
+        <label>Brasil</label>
+        <input type="number" id="real-br" min="0" max="20">
+      </div>
+      <div class="x">x</div>
+      <div class="campo">
+        <label>Marrocos</label>
+        <input type="number" id="real-adv" min="0" max="20">
+      </div>
+      <button class="principal" onclick="apurar()">Apurar vencedor</button>
+      <button class="secundario" onclick="limparApuracao()">Limpar</button>
+    </div>
+    <div class="resultado-apuracao" id="resultado-apuracao"></div>
+  </div>
+
+  <div class="acoes">
+    <button class="secundario" onclick="recarregar()">Recarregar do servidor</button>
+    <button class="secundario" onclick="configurarChave()">Trocar chave de acesso</button>
+    <a class="rodape-link" href="index.html" target="_blank" style="align-self:center;">Abrir a página pública</a>
+  </div>
+
+</div>
+
+<div id="modal-chave" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; padding:20px; z-index:50;">
+  <div style="background:#fff; border-radius:14px; padding:24px; max-width:440px; width:100%;">
+    <h2 style="font-size:18px; margin-bottom:8px;">Chave de acesso</h2>
+    <p style="font-size:14px; color:#6b7280; margin-bottom:14px; line-height:1.45;">
+      Cole sua chave do JSONBin para liberar a edição. Ela fica salva só neste navegador, não vai para a internet.
+    </p>
+    <input id="in-chave" type="password" placeholder="$2a$10$..." style="width:100%; padding:11px 12px; border:1px solid #d7dbe0; border-radius:10px; font-size:14px; margin-bottom:14px;">
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="secundario" onclick="fecharModalChave()">Cancelar</button>
+      <button class="principal" onclick="salvarChave()">Salvar chave</button>
+    </div>
+  </div>
+</div>
+
+<script src="bolao-core.js"></script>
+<script>
+// A chave de escrita NÃO fica neste arquivo (que é público).
+// Ela é digitada uma vez e guardada só no navegador deste dispositivo.
+const CHAVE_LS = "bolao-write-key";
+
+function getChave() {
+  try { return localStorage.getItem(CHAVE_LS) || ""; } catch (e) { return ""; }
+}
+function temChave() { return getChave().length > 10; }
+
+const dot = document.getElementById("dot");
+const statusTexto = document.getElementById("status-texto");
+
+let estado = estadoPadrao();
+let salvando = false;
+
+function configurarChave() {
+  document.getElementById("in-chave").value = getChave();
+  document.getElementById("modal-chave").style.display = "flex";
+}
+function fecharModalChave() {
+  document.getElementById("modal-chave").style.display = "none";
+}
+function salvarChave() {
+  const v = document.getElementById("in-chave").value.trim();
+  if (v.length < 10) { alert("Cole a chave completa."); return; }
+  try { localStorage.setItem(CHAVE_LS, v); } catch (e) {}
+  fecharModalChave();
+  setStatus("vivo", "Chave salva. Pode editar.");
+}
+
+function setStatus(tipo, texto) {
+  dot.className = "dot" + (tipo ? " " + tipo : "");
+  statusTexto.textContent = texto;
+}
+
+async function carregarInicial() {
+  setStatus("salvando", "Carregando...");
+  try {
+    estado = await buscarEstado();
+    render();
+    if (!temChave()) {
+      setStatus("erro", "Cole sua chave de acesso para poder editar.");
+      configurarChave();
+    } else {
+      setStatus("vivo", "Conectado · " + horaAgora());
+    }
+  } catch (e) {
+    setStatus("erro", "Não consegui carregar. Confira a internet.");
+  }
+}
+
+async function persistir() {
+  if (!temChave()) {
+    setStatus("erro", "Sem chave de acesso. Clique em Trocar chave de acesso.");
+    configurarChave();
+    return;
+  }
+  salvando = true;
+  setStatus("salvando", "Salvando...");
+  try {
+    await salvarEstado(estado, getChave());
+    setStatus("vivo", "Salvo às " + horaAgora());
+  } catch (e) {
+    setStatus("erro", "Erro ao salvar. A chave pode estar errada.");
+  } finally {
+    salvando = false;
+  }
+}
+
+function render() {
+  const ganhadores = vencedores(estado).map(p => p.id);
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  estado.palpites.forEach(p => {
+    const tr = document.createElement("tr");
+    if (!p.pagou) tr.classList.add("nao-pagou");
+    if (ganhadores.includes(p.id)) tr.classList.add("vencedor");
+    tr.innerHTML =
+      '<td><span class="nome-p">' + escapar(p.nome) + '</span></td>' +
+      '<td><span class="palpite-p">' + p.golsBr + ' x ' + p.golsAdv + '</span></td>' +
+      '<td><button class="status-pg ' + (p.pagou ? "sim" : "nao") + '" onclick="alternarPagamento(' + p.id + ')">' +
+        (p.pagou ? "Pagou" : "Não pagou") + '</button></td>' +
+      '<td><button class="perigo" onclick="remover(' + p.id + ')">Remover</button></td>';
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("msg-vazio").style.display = estado.palpites.length ? "none" : "block";
+
+  const r = calcularResumo(estado);
+  document.getElementById("r-participantes").textContent = r.total;
+  document.getElementById("r-arrecadado").textContent = dinheiro(r.arrecadado);
+  document.getElementById("r-pendente").textContent = dinheiro(r.pendente);
+  document.getElementById("r-premio").textContent = dinheiro(r.premio);
+  document.getElementById("valor-aposta").value = estado.valorAposta;
+
+  renderApuracao(r);
+}
+
+function renderApuracao(r) {
+  const div = document.getElementById("resultado-apuracao");
+  div.className = "resultado-apuracao";
+  if (!estado.placarReal) { div.textContent = ""; return; }
+
+  document.getElementById("real-br").value = estado.placarReal.br;
+  document.getElementById("real-adv").value = estado.placarReal.adv;
+
+  const g = vencedores(estado);
+  if (g.length === 0) {
+    div.classList.add("vazio");
+    div.textContent = "Placar final " + estado.placarReal.br + " x " + estado.placarReal.adv +
+      ": ninguém acertou o placar exato. Você decide se devolve ou acumula o prêmio de " + dinheiro(r.premio) + ".";
+  } else {
+    div.classList.add("ok");
+    const nomes = g.map(p => p.nome).join(", ");
+    const porPessoa = r.premio / g.length;
+    let texto = "Placar final " + estado.placarReal.br + " x " + estado.placarReal.adv + ". ";
+    texto += g.length === 1
+      ? "Vencedor: " + nomes + ", leva " + dinheiro(r.premio) + "."
+      : g.length + " vencedores (" + nomes + "), " + dinheiro(porPessoa) + " para cada.";
+    const devendo = g.filter(p => !p.pagou);
+    if (devendo.length) texto += " Atenção: " + devendo.map(p => p.nome).join(", ") + " ainda não pagou.";
+    div.textContent = texto;
+  }
+}
+
+document.getElementById("form-palpite").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const nome = document.getElementById("in-nome").value.trim();
+  const golsBr = parseInt(document.getElementById("in-gols-br").value, 10);
+  const golsAdv = parseInt(document.getElementById("in-gols-adv").value, 10);
+  if (!nome || isNaN(golsBr) || isNaN(golsAdv)) return;
+
+  if (estado.palpites.some(p => p.nome.toLowerCase() === nome.toLowerCase())) {
+    alert("Já existe um palpite no nome de " + nome + ". Cada pessoa pode dar um palpite.");
+    return;
+  }
+
+  const proximoId = estado.palpites.reduce((m, p) => Math.max(m, p.id), 0) + 1;
+  estado.palpites.push({ id: proximoId, nome: nome, golsBr: golsBr, golsAdv: golsAdv, pagou: false });
+  render();
+  persistir();
+  this.reset();
+  document.getElementById("in-nome").focus();
+});
+
+document.getElementById("valor-aposta").addEventListener("change", function () {
+  const v = parseFloat(this.value);
+  if (v > 0) { estado.valorAposta = v; render(); persistir(); }
+});
+
+function alternarPagamento(id) {
+  const p = estado.palpites.find(p => p.id === id);
+  if (p) { p.pagou = !p.pagou; render(); persistir(); }
+}
+
+function remover(id) {
+  const p = estado.palpites.find(p => p.id === id);
+  if (p && confirm("Remover o palpite de " + p.nome + "?")) {
+    estado.palpites = estado.palpites.filter(x => x.id !== id);
+    render();
+    persistir();
+  }
+}
+
+function apurar() {
+  const br = parseInt(document.getElementById("real-br").value, 10);
+  const adv = parseInt(document.getElementById("real-adv").value, 10);
+  if (isNaN(br) || isNaN(adv)) { alert("Preencha o placar final do jogo."); return; }
+  estado.placarReal = { br: br, adv: adv };
+  render();
+  persistir();
+}
+
+function limparApuracao() {
+  estado.placarReal = null;
+  document.getElementById("real-br").value = "";
+  document.getElementById("real-adv").value = "";
+  render();
+  persistir();
+}
+
+function recarregar() { if (!salvando) carregarInicial(); }
+
+carregarInicial();
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+:root {
+  --verde: #009739;
+  --verde-escuro: #00632a;
+  --amarelo: #fedd00;
+  --azul: #012169;
+  --vermelho: #d62839;
+  --cinza: #f4f5f7;
+  --texto: #1c2330;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--cinza);
+  color: var(--texto);
+  min-height: 100vh;
+  padding: 24px 16px 60px;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+
+header {
+  background: linear-gradient(135deg, var(--verde) 0%, var(--verde-escuro) 100%);
+  border-radius: 16px;
+  padding: 28px 24px;
+  color: #fff;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+header::after {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: var(--amarelo);
+  opacity: 0.15;
+  border-radius: 50%;
+}
+header .tag {
+  display: inline-block;
+  background: var(--amarelo);
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+header h1 { font-size: 30px; font-weight: 800; }
+header h1 span { color: var(--amarelo); }
+header .info { margin-top: 8px; font-size: 14px; opacity: 0.9; }
+
+.barra-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #6b7280;
+}
+.dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #c4c9d0;
+  display: inline-block;
+}
+.dot.vivo { background: var(--verde); box-shadow: 0 0 0 0 rgba(0,151,57,0.5); animation: pulso 1.8s infinite; }
+.dot.erro { background: var(--vermelho); }
+.dot.salvando { background: var(--amarelo); }
+@keyframes pulso {
+  0% { box-shadow: 0 0 0 0 rgba(0,151,57,0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(0,151,57,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,151,57,0); }
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.card h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #6b7280;
+  margin-bottom: 14px;
+}
+
+.resumo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.resumo .box {
+  background: var(--cinza);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+}
+.resumo .box .num { font-size: 22px; font-weight: 800; }
+.resumo .box .lbl { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.resumo .box.premio { background: var(--azul); color: #fff; }
+.resumo .box.premio .lbl { color: rgba(255,255,255,0.7); }
+.resumo .box.pendente .num { color: var(--vermelho); }
+
+.valor-aposta { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 14px; color: #6b7280; }
+.valor-aposta input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #d7dbe0;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+form.novo { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+form.novo .campo { display: flex; flex-direction: column; gap: 4px; }
+form.novo label { font-size: 12px; font-weight: 600; color: #6b7280; }
+form.novo input {
+  padding: 10px 12px;
+  border: 1px solid #d7dbe0;
+  border-radius: 10px;
+  font-size: 15px;
+}
+form.novo input.nome { width: 220px; }
+form.novo input.gols { width: 64px; text-align: center; font-weight: 700; font-size: 17px; }
+form.novo .x { font-weight: 800; color: #9aa1ab; padding: 0 2px 10px; align-self: flex-end; }
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+button:hover { opacity: 0.85; }
+button.principal { background: var(--verde); color: #fff; }
+button.secundario { background: #e7e9ed; color: var(--texto); }
+button.perigo { background: transparent; color: var(--vermelho); padding: 6px 8px; font-size: 13px; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #9aa1ab;
+  padding: 8px 10px;
+  border-bottom: 2px solid #eef0f3;
+}
+td { padding: 12px 10px; border-bottom: 1px solid #eef0f3; font-size: 15px; }
+tr.nao-pagou td { background: #fdf2f3; }
+tr.vencedor td { background: #fff9db; }
+tr.vencedor .nome-p::after {
+  content: "VENCEDOR";
+  background: var(--amarelo);
+  color: var(--azul);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.nome-p { font-weight: 700; }
+.palpite-p { font-weight: 800; font-size: 16px; letter-spacing: 1px; }
+.status-pg {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+}
+.status-pg.sim { background: #d9f2e3; color: var(--verde-escuro); }
+.status-pg.nao { background: #fbdfe2; color: var(--vermelho); }
+button.status-pg { border: none; cursor: pointer; }
+
+.apuracao { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.apuracao .campo { display: flex; flex-direction: column; gap: 4px; }
+.apuracao label { font-size: 12px; font-weight: 600; color: #6b7280; }
+.apuracao input {
+  width: 64px;
+  padding: 10px 12px;
+  border: 1px solid #d7dbe0;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 17px;
+}
+.apuracao .x { font-weight: 800; color: #9aa1ab; padding-bottom: 10px; }
+.resultado-apuracao {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  display: none;
+}
+.resultado-apuracao.ok { display: block; background: #fff9db; color: var(--azul); }
+.resultado-apuracao.vazio { display: block; background: #fbdfe2; color: var(--vermelho); }
+
+.acoes { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.vazio-msg { text-align: center; color: #9aa1ab; padding: 24px 0; font-size: 14px; }
+
+.rodape-link {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 13px;
+  color: #9aa1ab;
+}
+.rodape-link a { color: var(--azul); text-decoration: none; font-weight: 600; }
+
+@media (max-width: 560px) {
+  .resumo { grid-template-columns: repeat(2, 1fr); }
+  form.novo input.nome { width: 100%; }
+}

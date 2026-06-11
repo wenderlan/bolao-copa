@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bolão Brasil x Marrocos</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">Bolão da Copa</div>
+    <h1>Brasil <span>x</span> Marrocos</h1>
+    <div class="info">Sábado, 13 de junho de 2026, 19h (Brasília) · MetLife Stadium, Nova Jersey · Estreia na Copa</div>
+    <div class="barra-status">
+      <span class="dot" id="dot"></span>
+      <span id="status-texto">Carregando palpites...</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <h2>Resumo</h2>
+    <div class="resumo">
+      <div class="box"><div class="num" id="r-participantes">0</div><div class="lbl">Palpites</div></div>
+      <div class="box"><div class="num" id="r-arrecadado">R$ 0</div><div class="lbl">Arrecadado</div></div>
+      <div class="box pendente"><div class="num" id="r-pendente">R$ 0</div><div class="lbl">Pendente</div></div>
+      <div class="box premio"><div class="num" id="r-premio">R$ 0</div><div class="lbl">Prêmio</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Participantes</h2>
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Palpite</th>
+          <th>Pagamento</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="vazio-msg" id="msg-vazio">Nenhum palpite cadastrado ainda.</div>
+  </div>
+
+  <div class="card" id="card-apuracao" style="display:none;">
+    <h2>Resultado</h2>
+    <div class="resultado-apuracao" id="resultado-apuracao"></div>
+  </div>
+
+  <div class="rodape-link">Bolão entre amigos. As atualizações aparecem sozinhas nesta página.</div>
+
+</div>
+
+<script src="bolao-core.js"></script>
+<script>
+const dot = document.getElementById("dot");
+const statusTexto = document.getElementById("status-texto");
+
+function render(estado) {
+  const ganhadores = vencedores(estado).map(p => p.id);
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  estado.palpites.forEach(p => {
+    const tr = document.createElement("tr");
+    if (!p.pagou) tr.classList.add("nao-pagou");
+    if (ganhadores.includes(p.id)) tr.classList.add("vencedor");
+    tr.innerHTML =
+      '<td><span class="nome-p">' + escapar(p.nome) + '</span></td>' +
+      '<td><span class="palpite-p">' + p.golsBr + ' x ' + p.golsAdv + '</span></td>' +
+      '<td><span class="status-pg ' + (p.pagou ? "sim" : "nao") + '">' +
+        (p.pagou ? "Pagou" : "Não pagou") + '</span></td>';
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("msg-vazio").style.display = estado.palpites.length ? "none" : "block";
+
+  const r = calcularResumo(estado);
+  document.getElementById("r-participantes").textContent = r.total;
+  document.getElementById("r-arrecadado").textContent = dinheiro(r.arrecadado);
+  document.getElementById("r-pendente").textContent = dinheiro(r.pendente);
+  document.getElementById("r-premio").textContent = dinheiro(r.premio);
+
+  renderApuracao(estado, r);
+}
+
+function renderApuracao(estado, r) {
+  const card = document.getElementById("card-apuracao");
+  const div = document.getElementById("resultado-apuracao");
+  if (!estado.placarReal) { card.style.display = "none"; return; }
+
+  card.style.display = "block";
+  div.className = "resultado-apuracao";
+  const g = vencedores(estado);
+  if (g.length === 0) {
+    div.classList.add("vazio");
+    div.textContent = "Placar final " + estado.placarReal.br + " x " + estado.placarReal.adv +
+      ": ninguém acertou o placar exato.";
+  } else {
+    div.classList.add("ok");
+    const nomes = g.map(p => p.nome).join(", ");
+    const porPessoa = r.premio / g.length;
+    div.textContent = g.length === 1
+      ? "Placar final " + estado.placarReal.br + " x " + estado.placarReal.adv + ". Vencedor: " + nomes + ", leva " + dinheiro(r.premio) + "."
+      : "Placar final " + estado.placarReal.br + " x " + estado.placarReal.adv + ". " + g.length + " vencedores (" + nomes + "), " + dinheiro(porPessoa) + " para cada.";
+  }
+}
+
+async function atualizar() {
+  try {
+    const estado = await buscarEstado();
+    render(estado);
+    dot.className = "dot vivo";
+    statusTexto.textContent = "Ao vivo · atualizado às " + horaAgora();
+  } catch (e) {
+    dot.className = "dot erro";
+    statusTexto.textContent = "Sem conexão com o bolão. Tentando de novo...";
+  }
+}
+
+atualizar();
+setInterval(atualizar, 15000);
+</script>
+</body>
+</html>
